@@ -1,0 +1,48 @@
+version: '3'
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://host.docker.internal:5432/keycloakdb
+      - KC_DB_USERNAME=postgres
+      - KC_DB_PASSWORD=sajadv
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=sajadv
+      - KEYCLOAK_LOGLEVEL= INFO
+      - ROOT_LOGLEVEL= INFO
+      #- PROXY_ADDRESS_FORWARDING=true
+      - KC_HOSTNAME=localhost
+      - KC_HOSTNAME_STRICT=false #deactivate fixed hostname
+      - KC_HOSTNAME_STRICT_HTTPS=false #For local access to console admin in start mode
+      - KC_HTTP_ENABLED=true
+      #- KC_HTTPS_CERTIFICATE_FILE=/etc/x509/https/tls.crt
+      #- KC_HTTPS_CERTIFICATE_KEY_FILE=/etc/x509/https/tls.key
+    ports:
+      - 8060:8080
+      - 8065:8443
+    #command:
+    #  - start
+    extra_hosts:
+      - host.docker.internal:host-gateway
+  openldap:
+    image: osixia/openldap:1.5.0
+    command:
+      - --loglevel
+      - info
+    environment:
+      DISABLE_CHOWN: "true"
+      LDAP_LOG_LEVEL: "256"
+      LDAP_DOMAIN: "example.org"
+      LDAP_ADMIN_PASSWORD: "admin123"
+      LDAP_READONLY_USER: "false"
+      LDAP_TLS: "false"
+      LDAP_RFC2307BIS_SCHEMA: "false"
+      LDAP_SEED_INTERNAL_LDIF_PATH: /resources/
+    ports:
+      - "8389:389"
+    volumes:
+      - ./resources/embedded-ldap.ldif:/resources/embedded-ldap.ldif

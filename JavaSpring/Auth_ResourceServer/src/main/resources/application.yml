@@ -1,0 +1,44 @@
+# Configurações do Keycloak
+keycloak:
+  auth-server-url: http://localhost:8060
+  realm: caio-realm
+  resource: caio-paulucci
+  credentials:
+    secret: MMfGQYq9AZKjCzbd6PtRQJGh0tInTSjM
+  ssl-required: external
+  use-resource-role-mappings: true
+
+custom:
+  issuer-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}
+  jwk-set-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/certs
+  authorization-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/auth
+  token-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/token
+  user-info-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/userinfo
+  user-name-attribute: preferred_username
+
+# Configurações do Spring Security
+spring:
+  main:
+    allow-bean-definition-overriding: true
+#    web-application-type: reactive
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${custom.issuer-uri}
+          jwk-set-uri: ${custom.jwk-set-uri}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+logging:
+    level:
+      org:
+        springframework:
+          security:
+            web: DEBUG
+server:
+  port: 9960
+  

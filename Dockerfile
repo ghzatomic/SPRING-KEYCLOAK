@@ -1,0 +1,36 @@
+FROM quay.io/keycloak/keycloak:latest as builder
+
+# Enable health and metrics support
+ENV KC_HEALTH_ENABLED=true
+ENV KC_METRICS_ENABLED=true
+ENV KC_DB=postgres
+ENV KC_DB_URL=jdbc:postgresql://host.docker.internal:5432/keycloakdb
+ENV KC_DB_USERNAME=postgres
+ENV KC_DB_PASSWORD=sajadv
+ENV KEYCLOAK_ADMIN=admin
+ENV KEYCLOAK_ADMIN_PASSWORD=sajadv
+ENV KC_HOSTNAME_STRICT_HTTPS=false
+# Configure a database vendor
+ENV KC_DB=postgres
+
+
+WORKDIR /opt/keycloak
+
+# for demonstration purposes only, please make sure to use proper certificates in production instead
+RUN keytool -genkeypair -storepass password -storetype PKCS12 -keyalg RSA -keysize 2048 -dname "CN=server" -alias server -ext "SAN:c=DNS:localhost,IP:127.0.0.1" -keystore conf/server.keystore
+#RUN mkdir /opt/keycloak/providers
+COPY ./keycloak-protocol-cas-21.1.1.jar /opt/keycloak/providers/
+RUN /opt/keycloak/bin/kc.sh build
+
+FROM quay.io/keycloak/keycloak:latest
+COPY --from=builder /opt/keycloak/ /opt/keycloak/
+
+
+#RUN /opt/keycloak/bin/kcadm.sh config credentials --server http://localhost:8080 --realm master --user admin --password sajadv
+#RUN /opt/keycloak/bin/kcadm.sh update realms/master -s sslRequired=NONE
+
+COPY ./init.sh /opt/keycloak/bin/init.sh
+#RUN chmod +x /opt/keycloak/bin/init.sh
+ENTRYPOINT ["sh", "/opt/keycloak/bin/init.sh"]
+#ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start", "--optimized"]
+#ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start-dev"]

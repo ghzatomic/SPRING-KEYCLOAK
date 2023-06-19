@@ -1,0 +1,66 @@
+# Configurações do Keycloak
+keycloak:
+  auth-server-url: http://localhost:8060
+  realm: caio-realm
+  resource: caio-paulucci
+  credentials:
+    secret: MMfGQYq9AZKjCzbd6PtRQJGh0tInTSjM
+  ssl-required: external
+  use-resource-role-mappings: true
+
+custom:
+  resource-server-api: http://localhost:9960/api/foos/
+  issuer-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}
+  jwk-set-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/certs
+  authorization-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/auth
+  #authorization-uri: ${keycloak.auth-server-url}/admin/${keycloak.realm}/console/
+  token-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/token
+  user-info-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/userinfo
+  user-name-attribute: preferred_username
+
+# Configurações do Spring Security
+spring:
+  main:
+    allow-bean-definition-overriding: true
+    #web-application-type: none
+  security:
+    oauth2:
+      client:
+        registration:
+          custom:
+            client-id: ${keycloak.resource}
+            client-secret: ${keycloak.credentials.secret}
+            authorization-grant-type: authorization_code
+            #authorization-grant-type: client-authentication-method
+            provider: custom
+            scope: openid
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+        provider:
+          custom:
+             #issuer-uri: ${custom.issuer-uri}
+             token-uri: ${custom.token-uri}
+             user-info-uri: ${custom.user-info-uri}
+             authorization-uri: ${custom.authorization-uri}
+             jwk-set-uri: ${custom.jwk-set-uri}
+             user-name-attribute: ${custom.user-name-attribute}
+    
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+logging:
+    level:
+      org:
+        springframework:
+          security:
+            web: DEBUG
+server:
+  port: 9950
+#  servlet: 
+#    context-path: /ui-one
+    
+resourceserver:
+  api:
+    url: ${custom.resource-server-api}
+  
