@@ -4,14 +4,14 @@ services:
     image: quay.io/keycloak/keycloak:latest
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile # Dockerfile_customSPI
     environment:
       - KC_DB=postgres
       - KC_DB_URL=jdbc:postgresql://host.docker.internal:5432/keycloakdb
       - KC_DB_USERNAME=postgres
-      - KC_DB_PASSWORD=sajadv
+      - KC_DB_PASSWORD=12qwaszx
       - KEYCLOAK_ADMIN=admin
-      - KEYCLOAK_ADMIN_PASSWORD=sajadv
+      - KEYCLOAK_ADMIN_PASSWORD=12qwaszx
       - KEYCLOAK_LOGLEVEL= INFO
       - ROOT_LOGLEVEL= INFO
       #- PROXY_ADDRESS_FORWARDING=true
